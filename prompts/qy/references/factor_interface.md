@@ -48,6 +48,11 @@ position sizing, value trap screening, and cross-validation.
 | `mda_credibility` | enum | `"HIGH"` \| `"MEDIUM"` \| `"LOW"` | F1 Module 9 | MD&A narrative credibility |
 | `holding_structure` | enum | `"Applicable"` \| `"Not applicable"` | F1 Module 10 | Whether conglomerate analysis applies |
 | `holding_discount_pct` | float \| null | 0–100 or null | F1 Module 10 | Holding discount % (null if not applicable) |
+| `profit_quality` | enum | `"HIGH"` \| `"MODERATE"` \| `"LOW"` | D1-D | Profit quality after stripping non-operational items |
+| `non_operational_pct` | float (%) | 0–100 | D1-D | Non-operational profit as % of pre-tax profit |
+| `cross_validation_result` | enum | `"Consistent"` \| `"Minor divergences"` \| `"Material contradictions"` | CV | Cross-dimension consistency assessment |
+| `competitors` | list[string] | e.g. `["Eli Lilly (LLY)", "AstraZeneca (AZN)"]` | D2 Step 5 | Key competitors with tickers for monitoring |
+| `industry_keywords` | list[string] | e.g. `["GLP-1", "obesity drug", "semaglutide"]` | D3 | Industry search terms for event monitoring |
 | `factor1_conclusion` | enum | `"PASS"` \| `"VETO"` | F1 Summary | Factor 1 gate result |
 
 ---
@@ -124,6 +129,11 @@ Qualitative Parameters:
   mda_credibility          = [HIGH/MEDIUM/LOW]
   holding_structure        = [Applicable/Not applicable]
   holding_discount_pct     = [value or null]
+  profit_quality           = [HIGH/MODERATE/LOW]
+  non_operational_pct      = [value]%
+  cross_validation_result  = [Consistent/Minor divergences/Material contradictions]
+  competitors              = [list of "Name (TICKER)"]
+  industry_keywords        = [list of search terms]
   factor1_conclusion       = [PASS/VETO]
 
 Validation: [ALL POPULATED / MISSING: list of missing params]

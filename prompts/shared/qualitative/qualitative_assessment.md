@@ -91,9 +91,58 @@ Analysis:
 
 Output: `[prepaid / subscription / post-delivery / advance-funded]`, net effect on cash position
 
-### D1-C: Business Model Classification
+### D1-C: Revenue Quality Decomposition
 
-Based on D1-A and D1-B plus competitive context, classify into one of:
+> Separate core earning power from noise. Surface issues like NVO's $4.2B one-time 340B reversal
+> or PFE's COVID revenue cliff that distort headline growth.
+
+Analysis:
+- Break down revenue by segment/product line. Identify which segments are **core recurring** vs **low-quality**:
+  - Low-quality: one-time gains, lawsuit settlements, government subsidies, related-party revenue,
+    asset disposals, non-recurring licensing/milestone payments, pandemic/stimulus windfalls
+  - Pay attention to consolidation scope changes (new acquisitions inflating revenue vs organic growth)
+- Calculate **core revenue growth rate** (stripping low-quality items) — compare to headline growth
+- Analyze segment-level gross margin differences: is high growth coming from low-margin segments ("watering down")?
+- Check AR/Revenue ratio trend: rising AR faster than revenue = collection quality deterioration
+
+Output:
+```
+Core revenue share: [X]% of total revenue
+Core revenue growth (YoY): [X]% vs headline growth [Y]%
+Low-quality items: [list with amounts]
+Collection quality: [Improving / Stable / Deteriorating] (AR/Revenue trend)
+```
+
+### D1-D: Profit Quality Decomposition
+
+> Decompose profit growth to find whether the core business is truly improving or just riding
+> non-operational tailwinds.
+
+Analysis:
+- Decompose profit growth into driver contributions:
+  - Gross margin change (pricing power vs input costs)
+  - SGA/R&D/admin expense rate changes (efficiency vs cutting for short-term profit)
+  - Non-operating items: FX gains/losses, investment income, asset disposal gains, government grants
+- Calculate **non-operational profit contribution**: (non-operating income / total pre-tax profit)
+  - If > 15% of reported profit → **WARNING**: core operating profit may be weaker than reported
+- Check for **hidden expense manipulation**:
+  - R&D capitalization rate increasing? (shifting R&D from expense to balance sheet)
+  - SGA cuts while revenue grows? (potentially sacrificing future growth)
+  - Unusual depreciation policy changes?
+- Calculate **core operating profit growth**: strip non-recurring, FX, grants, disposal gains
+  - Key test: if non-operational contribution > reported profit growth, core profit is actually declining
+
+Output:
+```
+Core operating profit growth (YoY): [X]%
+Non-operational profit contribution: [X]% of pre-tax profit [WARNING if >15%]
+Expense manipulation signals: [None / list of concerns]
+Profit quality: [HIGH / MODERATE / LOW]
+```
+
+### D1-E: Business Model Classification
+
+Based on D1-A through D1-D plus competitive context, classify into one of:
 
 | Type | Characteristics | Typical Examples |
 |------|----------------|------------------|
@@ -302,6 +351,48 @@ Sensitivity: Bear case discount [X]%, bear implied own-business [X] $M
 
 ---
 
+## Cross-Validation & Deep Analysis
+
+> After completing D1-D6, step back and check internal consistency. This section catches
+> contradictions between dimensions that individual analyses miss.
+
+### CV-1: Number vs Narrative Consistency
+
+Check each pair for contradictions:
+
+| Pair | Check | Red Flag |
+|------|-------|----------|
+| D1 (profit quality) vs D5 (MD&A) | Does management's growth narrative match core operating profit trend? | Management claims "strong growth" but core profit is flat/declining after stripping non-recurring items |
+| D2 (moat) vs D1 (revenue quality) | Does pricing power claim match gross margin trend? | "WIDE moat" but gross margins declining or unable to raise prices |
+| D4 (capital allocation) vs D1 (profit quality) | Do acquisitions generate returns matching management claims? | Heavy M&A spending but core revenue growth excluding acquisitions is flat |
+| D3 (regulatory) vs D5 (MD&A) | Does management adequately disclose regulatory risks? | Material regulatory changes underway but MD&A downplays impact |
+
+### CV-2: Core Contradictions
+
+List the **top 1-3 contradictions** found (if any). For each:
+- State the contradiction clearly
+- Which dimension's conclusion should take precedence and why
+- Impact on overall quality grade (upgrade/downgrade/no change)
+
+### CV-3: Overlooked Signals
+
+Scan for signals that don't fit neatly into D1-D6 but matter:
+- Auditor changes or qualified opinions in recent 3 years
+- Unusual related-party transaction patterns
+- Insider selling patterns diverging from stated confidence
+- Off-balance-sheet arrangements flagged in footnotes
+- Concentration risk: single customer >20% of revenue, single supplier >30% of COGS
+
+Output:
+```
+Cross-validation result: [Consistent / Minor divergences / Material contradictions]
+Core contradictions: [list or "None"]
+Overlooked signals: [list or "None"]
+Quality grade adjustment: [None / Upgrade by 1 / Downgrade by 1], reason: [one sentence]
+```
+
+---
+
 ## Summary Output
 
 > This summary produces the structured output consumed by downstream strategy agents.
@@ -314,6 +405,8 @@ D1 — Business Model & Capital:
   Capital intensity: [capital-light / capital-hungry]
   Payment pattern: [prepaid / subscription / post-delivery / advance-funded]
   Business model type: [classification]
+  Revenue quality: Core revenue share [X]%, core growth [X]% vs headline [Y]%
+  Profit quality: [HIGH / MODERATE / LOW], non-operational contribution [X]%
 
 D2 — Competitive Advantage & Moat:
   Moat rating: [WIDE / NARROW / NONE]
@@ -344,6 +437,15 @@ Calibration Decisions:
   Anchored profit metric: [metric name] = §3 [line item]
   Cash definition: [narrow / broad]
   Anomalies: [<= 3 items]
+
+Cross-Validation:
+  Consistency: [Consistent / Minor divergences / Material contradictions]
+  Core contradictions: [list or "None"]
+  Overlooked signals: [list or "None"]
+  Quality grade adjustment: [None / Upgrade by 1 / Downgrade by 1]
+
+Competitors: [list of "Name (TICKER)" from D2]
+Industry keywords: [list of monitoring search terms from D3]
 
 Overall Business Quality: [A / B / C / D]
   A = High quality (light-asset, wide moat, excellent management)

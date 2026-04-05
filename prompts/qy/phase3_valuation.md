@@ -39,7 +39,8 @@ Read output/{TICKER}/phase3_qualitative.md:
     moat_rating, management_rating, sbc_concern, regulatory_risk,
     mda_credibility, holding_structure, holding_discount_pct,
     capital_intensity, payment_pattern, business_model_type,
-    compound_flywheel
+    compound_flywheel, profit_quality, non_operational_pct,
+    cross_validation_result, competitors, industry_keywords
 ```
 
 ### From Agent B (Quantitative)
@@ -249,11 +250,109 @@ Write to `output/{TICKER}/{TICKER}_analysis_report.md`:
 ## Investment Conclusion
 [Final verdict with key reasoning]
 
+---
+
+## Investment Thesis Card
+
+> Structured thesis for post-purchase monitoring and stop-loss decisions.
+> Populated using Agent A (competitors, industry_keywords) and Agent B (quantitative thresholds).
+
+### Thesis Summary
+
+**Core Thesis**: {One paragraph: why buy/watch/avoid this stock, with key data support}
+
+**Buy Rationale** (<=5 items, each with specific data):
+1. {e.g., "GG of X% exceeds Threshold II by Y pct, providing Z% safety margin"}
+2. {e.g., "WIDE moat with compound flywheel — 5yr avg ROE of X%"}
+3. {e.g., "Stock at $X is at Pth percentile of 10-year range, near historical floor"}
+
+**Expected Catalysts**:
+1. {e.g., "Buyback program resumption — $X.XB authorization remaining"}
+2. {e.g., "New product launch expected YYYY contributing est. $XB revenue"}
+
+**Expected Holding Period**: {12-24 months / 6-12 months / Long-term (>3 years)}
+
+### Fundamental Stop-Loss Conditions
+
+#### Structured Rules (check on each earnings release)
+
+| # | Metric | Condition | Severity | Rationale |
+|---|--------|-----------|----------|-----------|
+| 1 | GG (Penetration Return) | Falls below -5% | critical | Core return metric collapse |
+| 2 | Payout Ratio | Exceeds 90% for 2 consecutive quarters | critical | Dividend sustainability at risk |
+| 3 | Revenue (YoY) | Declines >10% | warning | Demand erosion signal |
+| 4 | Net Debt / EBITDA | Exceeds 4.0x | warning | Leverage risk elevated |
+| 5 | Dividend | Cut >20% from prior year | critical | Distribution willingness reversal |
+| 6 | FCF | Negative for 2 consecutive years | critical | Cash generation failure |
+| 7 | Gross Margin | Falls >5 pct below 3-year average | warning | Pricing power / cost advantage erosion |
+
+> Severity: **critical** = trigger immediate thesis review; **warning** = monitor closely, no immediate action.
+> Thresholds are defaults — Agent C should adjust based on the specific company's profile
+> (e.g., a capital-hungry company in a buildout phase may tolerate negative FCF temporarily).
+
+#### Natural Language Conditions (require human/LLM judgment)
+
+Based on Agent A's qualitative analysis, list company-specific thesis-breaking conditions:
+- {e.g., "CEO departure with no clear succession plan"}
+- {e.g., "Loss of key patent/license/regulatory approval"}
+- {e.g., "Major customer (>15% of revenue) terminates contract"}
+- {e.g., "Moat rating downgraded from WIDE to NARROW based on competitive evidence"}
+
+**Review frequency**: Full check on each earnings release + monthly keyword monitoring
+
+### Event Monitoring Checklist
+
+**Search Keywords** (for WebSearch/news monitoring):
+
+High priority (flag immediately):
+- "{TICKER} earnings miss" / "{TICKER} profit warning"
+- "{TICKER} dividend cut" / "{TICKER} dividend suspend"
+- "{TICKER} CEO resign" / "{TICKER} CFO change"
+- "{TICKER} buyback" / "{TICKER} share repurchase"
+- "{TICKER} downgrade" / "{TICKER} FDA" (if applicable)
+
+Low priority (include in periodic summary):
+- "{TICKER} acquisition" / "{TICKER} divestiture"
+- "{TICKER} lawsuit" / "{TICKER} SEC investigation"
+- "{TICKER} guidance" / "{TICKER} outlook"
+
+**Event Classification**:
+
+| Event Type | Priority | Thesis Impact |
+|------------|----------|---------------|
+| Buyback / insider purchase | high | Positive: management confidence signal |
+| Insider selling (non-planned) | high | Negative: may trigger stop-loss review |
+| Earnings surprise (miss) | critical | Direct impact on GG calculation |
+| Management change | high | Affects governance rating (D4) |
+| Dividend policy change | high | Direct impact on distribution willingness |
+| Major litigation / regulatory action | high | Contingent liability risk |
+| Credit rating change | medium | Leverage risk signal |
+| M&A announcement | medium | May change business model assessment |
+
+### Industry & Macro Monitoring
+
+**Industry Keywords** (from Agent A `industry_keywords`):
+- {populated from Agent A's D3 output, e.g., "GLP-1 market share", "obesity drug approval"}
+
+**Competitor Watch List** (from Agent A `competitors`):
+
+| Company | Ticker | Watch For |
+|---------|--------|-----------|
+| {from competitors list} | {ticker} | {market share changes / new product launches / pricing actions} |
+
+**Macro Attention Dimensions**:
+- Sector-specific regulation changes (FDA, FTC, EPA, etc.)
+- Interest rate / credit cycle impact on sector
+- Trade policy / tariff exposure
+- Supply chain disruptions relevant to this company
+
+---
+
 ## Risk Factors
 [Top 3-5 risks specific to this stock]
 
 ## Monitoring Checklist
-[Key metrics to track quarterly]
+[Key metrics to track quarterly — retained for backward compatibility; Thesis Card above is the enhanced version]
 ```
 
 ---
