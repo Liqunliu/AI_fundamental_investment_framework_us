@@ -82,31 +82,56 @@ Turtle v2_beta introduced several architectural changes. This doc identifies whi
 
 ---
 
-## LOW Priority — Not Applicable
+## LOW Priority — Implementation Status
 
-### Preflight Merged into Agent B (Step 0)
+### Preflight Merged into Agent B (Step 0) — PARTIALLY IMPLEMENTED
 
-**Why skip**: US framework uses parallel Agent A || Agent B architecture. Both agents consume preflight output. Merging preflight into Agent B would break Agent A's access to calibration parameters (profit anchor, cash scope, anomalies) unless Agent A independently derives them, adding redundant work. The serial Turtle architecture (Agent B → Agent C) naturally benefits from this merge; the parallel US architecture does not.
+**Original concern**: Merging preflight into Agent B would break Agent A's access to calibration params.
 
-### PDF-First Architecture
+**Adaptation**: Added **Step 0** to `prompts/qy/phase3_quantitative.md` that performs inline calibration
+when preflight is missing or stale — but does NOT remove the standalone preflight. Agent A still reads
+`phase3_preflight.md` as before. Agent B now has a fallback: if preflight exists and is recent, loads from it;
+if missing, derives calibration directly from data_pack.md. Also added **currency validation** (Step 0-B)
+to detect DKK/USD-type mismatches automatically — learned from the NVO analysis.
 
-**Why skip**: US framework uses EDGAR HTML filings (parsed by `edgar_parser.py`) + yfinance data packs, not PDF annual reports. The PDF-first approach was designed for Chinese A-share companies where annual report PDFs are the canonical source.
+**Files changed**: `prompts/qy/phase3_quantitative.md`
 
-### Decoupled Qualitative as Prerequisite
+### PDF-First Architecture — SKIPPED (Not applicable)
 
-**Why skip**: Turtle moved to sequential (qualitative first, then quantitative) because it switched to single-agent mode. US framework's parallel Agent A || Agent B is more time-efficient and doesn't suffer from information silos since both agents share the same data_pack.md + preflight.
+US framework uses EDGAR HTML filings (parsed by `edgar_parser.py`) + yfinance data packs,
+not PDF annual reports.
 
-### Coordinator Restructuring
+### Decoupled Qualitative as Prerequisite — SKIPPED (Not applicable)
 
-**Why skip**: US coordinator already well-structured for its parallel architecture. Turtle's simplification came from decoupling qualitative, which we're not doing.
+US framework's parallel Agent A || Agent B is more time-efficient. Both agents share the same
+data_pack.md + preflight without information silos.
 
-### Standalone Valuation Module (`/valuation`)
+### Coordinator Restructuring — SKIPPED (Not needed)
 
-**Why skip for now**: 1500-line Python script (`valuation_engine.py`) + 5 reference files built around Tushare data and Chinese market conventions. Porting requires adapting to yfinance/Bloomberg + US GAAP. This is a separate project, not a delta.
+US coordinator already well-structured for its parallel architecture.
 
-### Single-Agent Mode for Qualitative
+### Standalone Valuation Module (`/valuation`) — IMPLEMENTED
 
-**Why skip**: Turtle found single-agent cross-validation superior for qualitative analysis. However, the US Agent A runs qualitative only (D1-D6 + F1A), not both qual + quant. The benefit of single-agent mode is eliminating information silos between dimensions, but Agent A already processes all qualitative dimensions in one context window.
+**Adaptation**: Created a **pure LLM-based** valuation module (no Python engine) using prompts.
+The Turtle's `valuation_engine.py` (1500 lines) was designed for Tushare data; porting it to
+yfinance would be a large effort. Instead, the US module uses LLM-executed valuation with:
+- DCF (two-stage, with growth/maintenance capex separation)
+- DDM (Gordon Growth + two-stage for high-growth dividends)
+- Comparable Multiples (P/E, EV/EBITDA, P/B, FCF Yield vs historical and sector)
+- Graham Number (for value/hybrid companies)
+- Qualitative adjustments from `/business-analysis` output (if available)
+- Cross-validation across all methods
+
+**Files created**:
+- `prompts/valuation/coordinator.md` — pipeline orchestration
+- `prompts/valuation/phase2_valuation.md` — LLM valuation execution
+- `.claude/skills/valuation/skill.md` — skill entry point
+- `docs/valuation.md` — user documentation
+
+### Single-Agent Mode for Qualitative — SKIPPED (Not applicable)
+
+US Agent A already processes all qualitative dimensions (D1-D6) in one context window,
+achieving the same cross-dimension validation benefit.
 
 ---
 

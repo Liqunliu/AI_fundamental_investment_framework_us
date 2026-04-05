@@ -34,20 +34,59 @@ and Factor 3 (refined return + cash quality audit) as a single continuous analys
 
 ---
 
-## Pre-Execution: Load Calibration
+## Step 0: Inline Calibration & Data Validation
+
+> Step 0 performs calibration inline, making Agent B self-contained.
+> If `phase3_preflight.md` exists and is < 24h old, load calibration from it.
+> Otherwise, derive calibration directly from data_pack.md (identical logic to preflight).
+
+### 0-A: Load or Derive Calibration
 
 ```
-Read output/{TICKER}/phase3_preflight.md:
-  anchored_profit_metric = [value]
-  anchored_profit_value  = [value] $M
-  cash_definition        = [narrow/broad]
-  cash_value             = [value] $M
-  interim_data           = [none/Q1/H1/Q3]
-  annualization_coeff    = [value]
-  anomalies              = [list]
+TRY: Read output/{TICKER}/phase3_preflight.md
+  IF exists and recent (< 24h):
+    Load: anchored_profit_metric, anchored_profit_value, cash_definition,
+          cash_value, interim_data, annualization_coeff, anomalies
+    Mark: "Calibration source: preflight"
+
+  ELSE (preflight missing or stale):
+    Derive from data_pack.md directly:
+
+    Profit anchor:
+      (a) GAAP Net Income = §3 Net Income (latest FY)
+      (b) Adjusted NI = NI - SBC (from §5)
+      (c) Operating Income = §3 Operating Income
+      Rule: SBC/NI > 20% → use (b); non-recurring > 30% → use (c); else → use (a)
+
+    Cash scope:
+      Narrow = §4 Cash & Equivalents + Short-term Investments
+      Broad = Narrow + HTM/money market/Treasuries (if maturity ≤ 1yr, no restrictions)
+
+    Anomaly scan:
+      Flag ≤ 3 metrics with YoY change > 30%, margin change > 5 pct, or sign flip
+
+    Interim detection:
+      If §3/§5 has interim column: set annualization_coeff accordingly
+      Else: interim_data = none, annualization_coeff = 1.0
+
+    Mark: "Calibration source: inline (preflight unavailable)"
 ```
 
-### Load Supplementary Files (if available)
+### 0-B: Currency Validation
+
+```
+Check §1 Company Profile for reporting currency:
+  If reporting currency ≠ USD (e.g., DKK, GBP, EUR, JPY):
+    reporting_currency = [currency code]
+    fx_rate = [approximate rate to USD]
+    Flag: "CURRENCY MISMATCH — all §3/§4/§5 data in {currency}, market data in USD"
+    All downstream calculations must convert before combining financial + market data
+  Else:
+    reporting_currency = USD
+    fx_rate = 1.0
+```
+
+### 0-C: Load Supplementary Files
 
 ```
 Read output/{TICKER}/data_pack_footnotes.md (if exists):
@@ -62,6 +101,24 @@ Read output/{TICKER}/{TICKER}_factor_inputs.md (if exists):
   §16.4: Operating outflows → cross-validate Step 8
   §16.5: Base surplus, AA, λ → cross-validate Step 11
   If file missing → proceed without pre-computed values
+```
+
+### Step 0 Output (prepend to Agent B report)
+
+```
+## Pre-Execution: Calibration Parameters Loaded
+
+anchored_profit_metric  = [value]
+anchored_profit_value   = [value] $M
+anchored_profit_ref     = §3 [line item]
+cash_definition         = [narrow/broad]
+cash_value              = [value] $M
+interim_data            = [none/Q1/H1/Q3]
+annualization_coeff     = [value]
+reporting_currency      = [USD/DKK/etc.]
+fx_rate                 = [value]
+anomalies               = [list]
+calibration_source      = [preflight / inline]
 ```
 
 ---
