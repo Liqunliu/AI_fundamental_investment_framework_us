@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Turtle Investment Framework (US Equity) - yFinance Data Collector.
+"""Quality Yield Investment Framework (US Equity) - yFinance Data Collector.
 
 Collects financial data from Yahoo Finance and outputs a structured
-data_pack.md file for the US Equity Turtle Investment Strategy.
+data_pack.md file for the US Equity Quality Yield Strategy.
 
 All monetary values are in millions USD unless otherwise noted.
 
@@ -67,6 +67,8 @@ from format_utils import (  # noqa: E402
     format_header,
 )
 from datetime import datetime  # noqa: E402
+from warning_schema import detect_warnings, save_warnings_json  # noqa: E402
+from cache import DataCache  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -74,17 +76,22 @@ from datetime import datetime  # noqa: E402
 # ---------------------------------------------------------------------------
 
 class YFinanceCollector:
-    """Collect financial data from Yahoo Finance for the US Equity Turtle Framework."""
+    """Collect financial data from Yahoo Finance for the US Equity Quality Yield Framework."""
 
-    def __init__(self, ticker_symbol: str, years: int = 5):
+    def __init__(self, ticker_symbol: str, years: int = 5,
+                 cache: DataCache | None = None, no_cache: bool = False):
         """
         Args:
             ticker_symbol: US stock ticker (e.g. 'AAPL', 'MSFT').
             years: Number of years of historical data to collect.
+            cache: Optional DataCache instance for persistent caching.
+            no_cache: If True, bypass cache reads (still writes to cache).
         """
         self.symbol = validate_us_ticker(ticker_symbol)
         self.years = years
         self.ticker = yf.Ticker(self.symbol)
+        self.cache = cache
+        self.no_cache = no_cache
 
         # Lazy-loaded data caches
         self._info: dict | None = None
@@ -92,6 +99,7 @@ class YFinanceCollector:
         self._balance: pd.DataFrame | None = None
         self._cashflow: pd.DataFrame | None = None
         self._history: pd.DataFrame | None = None
+        self._warnings: list | None = None
 
     # ------------------------------------------------------------------
     # Data fetching helpers
@@ -100,27 +108,47 @@ class YFinanceCollector:
     def _get_info(self) -> dict:
         """Return ticker.info dict (cached)."""
         if self._info is None:
+            if self.cache and not self.no_cache:
+                cached = self.cache.get(self.symbol, "info")
+                if cached is not None:
+                    print(f"  [cache hit] info for {self.symbol}")
+                    self._info = cached
+                    return self._info
             try:
                 self._info = self.ticker.info or {}
             except Exception as exc:
                 print(f"WARNING: Could not fetch info for {self.symbol}: {exc}", file=sys.stderr)
                 self._info = {}
+            if self.cache:
+                self.cache.put(self.symbol, "info", self._info)
         return self._info
 
     def _get_financials(self) -> None:
         """Fetch income statement, balance sheet and cash-flow statement."""
         print(f"Fetching financial statements for {self.symbol} ...")
 
-        for attr, label in [
-            ("financials", "Income Statement"),
-            ("balance_sheet", "Balance Sheet"),
-            ("cashflow", "Cash Flow"),
-        ]:
+        cache_map = {
+            "financials": ("income", "Income Statement"),
+            "balance_sheet": ("balance", "Balance Sheet"),
+            "cashflow": ("cashflow", "Cash Flow"),
+        }
+
+        for attr, (cache_key, label) in cache_map.items():
+            internal = f"_{cache_key}"
+            # Try cache first
+            if self.cache and not self.no_cache:
+                cached = self.cache.get(self.symbol, cache_key)
+                if cached is not None:
+                    print(f"  [cache hit] {label}")
+                    setattr(self, internal, cached)
+                    continue
             try:
                 df = getattr(self.ticker, attr)
-                setattr(self, f"_{attr.replace('balance_sheet', 'balance').replace('financials', 'income')}", df)
+                setattr(self, internal, df)
                 shape = df.shape if df is not None else "N/A"
                 print(f"  {label}: {shape}")
+                if self.cache and df is not None:
+                    self.cache.put(self.symbol, cache_key, df)
             except Exception as exc:
                 print(f"  {label} failed: {exc}", file=sys.stderr)
 
@@ -134,11 +162,20 @@ class YFinanceCollector:
 
     def _get_history(self) -> None:
         """Fetch historical OHLCV price data."""
+        if self.cache and not self.no_cache:
+            cached = self.cache.get(self.symbol, "history")
+            if cached is not None:
+                print(f"  [cache hit] price history")
+                self._history = cached
+                return
+
         print(f"Fetching price history (10 years weekly) ...")
         try:
             self._history = self.ticker.history(period="10y", interval="1wk")
             if self._history is not None:
                 print(f"  History: {len(self._history)} weekly bars")
+                if self.cache:
+                    self.cache.put(self.symbol, "history", self._history)
             else:
                 self._history = pd.DataFrame()
         except Exception as exc:
@@ -383,14 +420,18 @@ class YFinanceCollector:
                                      "Cash Cash Equivalents And Short Term Investments"]),
             ("Accounts Receivable", ["Accounts Receivable", "Net Receivables", "Receivables"]),
             ("Inventory", ["Inventory"]),
+            ("Accounts Payable", ["Accounts Payable"]),
+            ("Deferred Revenue", ["Deferred Revenue"]),
             ("Non-Current Assets", ["Total Non Current Assets"]),
             ("Net PP&E", ["Net PPE", "Net Property Plant And Equipment"]),
             ("Goodwill", ["Goodwill"]),
             ("Intangible Assets", ["Intangible Assets", "Goodwill And Other Intangible Assets"]),
+            ("Deferred Tax Assets", ["Deferred Tax Assets"]),
             ("Total Liabilities", ["Total Liabilities Net Minority Interest", "Total Liab"]),
             ("Current Liabilities", ["Current Liabilities"]),
             ("Current Debt", ["Current Debt", "Short Long Term Debt"]),
             ("Long-Term Debt", ["Long Term Debt"]),
+            ("Deferred Tax Liabilities", ["Deferred Tax Liabilities"]),
             ("Stockholders' Equity", ["Total Stockholders Equity", "Stockholders Equity",
                                        "Total Equity Gross Minority Interest"]),
         ]
@@ -429,6 +470,7 @@ class YFinanceCollector:
             ("Investing Cash Flow", ["Investing Cash Flow", "Total Cashflows From Investing Activities"]),
             ("Financing Cash Flow", ["Financing Cash Flow", "Total Cash From Financing Activities"]),
             ("Depreciation & Amortization", ["Depreciation And Amortization", "Depreciation"]),
+            ("Stock-Based Compensation", ["Stock Based Compensation"]),
             ("Share Buybacks", ["Repurchase Of Capital Stock", "Common Stock Repurchased"]),
             ("Dividends Paid", ["Common Stock Dividend Paid", "Cash Dividends Paid"]),
         ]
@@ -594,70 +636,19 @@ class YFinanceCollector:
         lines.append("> Anomalies auto-detected during data collection for use in Phase 3 analysis.")
         lines.append("")
 
-        warnings_list: list[tuple[str, str, str]] = []
-
-        # Missing data checks
-        if self._income is None or self._income.empty:
-            warnings_list.append(("Data Gap", "High", "Income statement data missing."))
-        if self._balance is None or self._balance.empty:
-            warnings_list.append(("Data Gap", "High", "Balance sheet data missing."))
-        if self._cashflow is None or self._cashflow.empty:
-            warnings_list.append(("Data Gap", "High", "Cash flow statement data missing."))
-
-        # Year-over-year anomaly checks in income statement
-        if self._income is not None and not self._income.empty:
-            for field, readable in [
-                ("Total Revenue", "Revenue"),
-                ("Net Income", "Net Income"),
-            ]:
-                if field in self._income.index:
-                    vals = self._income.loc[field].dropna()
-                    if len(vals) >= 2:
-                        pct_changes = vals.pct_change().dropna().abs()
-                        for date, chg in pct_changes.items():
-                            if chg > 3.0:
-                                warnings_list.append((
-                                    "Anomaly", "High",
-                                    f"{readable} changed by {chg * 100:.0f}% in {date.year}."))
-                            elif chg > 1.0:
-                                warnings_list.append((
-                                    "Anomaly", "Medium",
-                                    f"{readable} changed by {chg * 100:.0f}% in {date.year}."))
-
-        # Negative equity check
-        if self._balance is not None and not self._balance.empty:
-            for eq_field in ["Total Stockholders Equity", "Stockholders Equity",
-                             "Total Equity Gross Minority Interest"]:
-                if eq_field in self._balance.index:
-                    eq_vals = self._balance.loc[eq_field].dropna()
-                    if len(eq_vals) > 0 and (eq_vals < 0).any():
-                        neg_years = [d.year for d, v in eq_vals.items() if v < 0]
-                        warnings_list.append((
-                            "Solvency", "High",
-                            f"Negative stockholders' equity in {', '.join(str(y) for y in neg_years)}."))
-                    break
-
-        # Declining OCF check
-        if self._cashflow is not None and not self._cashflow.empty:
-            for ocf_field in ["Operating Cash Flow", "Total Cash From Operating Activities"]:
-                if ocf_field in self._cashflow.index:
-                    ocf = self._cashflow.loc[ocf_field].dropna()
-                    if len(ocf) >= 3:
-                        # Check if OCF has been declining for 3+ consecutive periods
-                        diffs = ocf.diff()
-                        if (diffs.dropna() > 0).all():
-                            # yfinance columns are descending; diff > 0 means earlier > later = decline
-                            warnings_list.append((
-                                "Cash Flow", "Medium",
-                                "Operating cash flow has declined for 3+ consecutive years."))
-                    break
+        # Use structured warning detection
+        self._warnings = detect_warnings(
+            self._income, self._balance, self._cashflow, self._get_info(),
+        )
 
         lines.append("### 12.1 Auto-Detected Warnings")
         lines.append("")
-        if warnings_list:
-            headers = ["#", "Category", "Severity", "Description"]
-            rows = [[str(i + 1), cat, sev, desc]
-                    for i, (cat, sev, desc) in enumerate(warnings_list)]
+        if self._warnings:
+            headers = ["#", "Type", "Category", "Severity", "Description"]
+            rows = [
+                [str(i + 1), w.type, w.category, w.severity, w.message]
+                for i, w in enumerate(self._warnings)
+            ]
             lines.append(format_table(headers, rows))
         else:
             lines.append("No anomalies detected.")
@@ -960,7 +951,7 @@ class YFinanceCollector:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Collect US equity financial data from Yahoo Finance for the Turtle Framework.",
+        description="Collect US equity financial data from Yahoo Finance for the Quality Yield Framework.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -982,6 +973,9 @@ Examples:
     parser.add_argument(
         "--dry-run", action="store_true",
         help="Print configuration and exit without fetching data")
+    parser.add_argument(
+        "--no-cache", action="store_true",
+        help="Bypass disk cache and force fresh data fetch")
     return parser.parse_args()
 
 
@@ -1012,8 +1006,13 @@ def main() -> None:
         print(f"  Rf     : {DEFAULT_CONFIG.risk_free_rate * 100:.1f}%")
         return
 
+    # Initialize cache
+    cache = DataCache() if not args.no_cache else None
+    if args.no_cache:
+        print("Cache disabled (--no-cache)")
+
     print(f"Collecting data for {ticker} from Yahoo Finance ...")
-    collector = YFinanceCollector(ticker, args.years)
+    collector = YFinanceCollector(ticker, args.years, cache=cache, no_cache=args.no_cache)
     data_pack = collector.assemble_data_pack()
 
     # Ensure output directory exists
@@ -1024,9 +1023,17 @@ def main() -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(data_pack)
 
+    # Save structured warnings JSON alongside data_pack
+    if hasattr(collector, "_warnings") and collector._warnings is not None:
+        warn_path = save_warnings_json(collector._warnings, out_dir or ".")
+        print(f"Warnings JSON: {warn_path} ({len(collector._warnings)} warnings)")
+
     file_size = os.path.getsize(output_path)
     print(f"\nOutput written to {output_path}")
     print(f"File size: {file_size:,} bytes")
+    if cache:
+        stats = cache.stats()
+        print(f"Cache stats: {stats['hits']} hits, {stats['misses']} misses ({stats['hit_rate']})")
     print("Done!")
 
 

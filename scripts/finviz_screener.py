@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""US Equity Turtle Strategy — Finviz Screener + Quick GG Scanner.
+"""US Equity Quality Yield Strategy — Finviz Screener + Quick GG Scanner.
 
 Two-pass screening pipeline:
   Tier 1   : Finviz bulk screen -> ~50 candidates   (~2 min)
@@ -43,6 +43,7 @@ if _SCRIPT_DIR not in sys.path:
     sys.path.insert(0, _SCRIPT_DIR)
 
 from config import DEFAULT_CONFIG, validate_us_ticker  # noqa: E402
+from cache import DataCache  # noqa: E402
 
 # Project root (one level above scripts/)
 _PROJECT_ROOT = os.path.normpath(os.path.join(_SCRIPT_DIR, ".."))
@@ -165,7 +166,7 @@ def fetch_from_finviz(
         custom_filter: Raw Finviz filter string (e.g. "cap_largeover,fa_pe_u20").
 
     Returns:
-        DataFrame with normalised columns ready for Turtle filtering.
+        DataFrame with normalised columns ready for Quality Yield filtering.
     """
     print(f"\n{'='*80}")
     print("TIER 1 — Finviz Screening")
@@ -218,10 +219,10 @@ def fetch_from_finviz(
     return df
 
 
-def apply_turtle_filters(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply Turtle-style value/quality filters using DEFAULT_CONFIG thresholds."""
+def apply_qy_filters(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply QY-style value/quality filters using DEFAULT_CONFIG thresholds."""
     cfg = DEFAULT_CONFIG
-    print(f"\n  Applying Turtle filters (universe={len(df)})")
+    print(f"\n  Applying Quality Yield filters (universe={len(df)})")
     n0 = len(df)
 
     def _step(mask, label):
@@ -334,9 +335,9 @@ def run_tier1(
     if df_raw.empty:
         return df_raw
 
-    df_filt = apply_turtle_filters(df_raw)
+    df_filt = apply_qy_filters(df_raw)
     if df_filt.empty:
-        print("  No stocks survived Turtle filters — try relaxing criteria.")
+        print("  No stocks survived Quality Yield filters — try relaxing criteria.")
         return df_filt
 
     df_scored = compute_composite_score(df_filt)
@@ -349,11 +350,15 @@ def run_tier1(
 #  Tier 1.5 — Quick GG Scan
 # ============================================================================
 
-def _fetch_gg_for_ticker(ticker: str) -> Dict[str, Any]:
+def _fetch_gg_for_ticker(ticker: str, cache: DataCache | None = None) -> Dict[str, Any]:
     """Fetch basic financials from yfinance and compute quick GG.
 
     Quick GG = (Operating Cash Flow - Capital Expenditure) / Market Cap
     This is an *approximation*: it omits SBC add-back, debt changes, etc.
+
+    Args:
+        ticker: US stock ticker.
+        cache: Optional DataCache for persistent caching of info/cashflow data.
 
     Returns:
         dict with keys: ticker, ocf, capex, fcf, market_cap_yf, quick_gg,
@@ -373,7 +378,15 @@ def _fetch_gg_for_ticker(ticker: str) -> Dict[str, Any]:
 
     try:
         stock = yf.Ticker(ticker)
-        info = stock.info or {}
+
+        # --- Info (with cache) ---
+        info = None
+        if cache:
+            info = cache.get(ticker, "info")
+        if info is None:
+            info = stock.info or {}
+            if cache:
+                cache.put(ticker, "info", info)
 
         # Market cap from yfinance
         mktcap = info.get("marketCap")
@@ -382,41 +395,48 @@ def _fetch_gg_for_ticker(ticker: str) -> Dict[str, Any]:
             return result
         result["market_cap_yf"] = mktcap
 
-        # Try cash flow statement first (more reliable)
-        try:
-            cf = stock.cashflow
-            if cf is not None and not cf.empty:
-                # cashflow is a DataFrame with dates as columns, items as rows
-                # Take the most recent annual column
-                latest = cf.iloc[:, 0]
+        # --- Cash flow (with cache) ---
+        cf = None
+        if cache:
+            cf = cache.get(ticker, "cashflow")
+        if cf is None:
+            try:
+                cf = stock.cashflow
+                if cache and cf is not None:
+                    cache.put(ticker, "cashflow", cf)
+            except Exception:
+                pass
 
-                # Operating Cash Flow — try several label variants
-                ocf = None
-                for label in [
-                    "Total Cash From Operating Activities",
-                    "Operating Cash Flow",
-                    "Cash Flow From Continuing Operating Activities",
-                ]:
-                    if label in latest.index:
-                        ocf = latest[label]
-                        break
+        if cf is not None and not cf.empty:
+            # cashflow is a DataFrame with dates as columns, items as rows
+            # Take the most recent annual column
+            latest = cf.iloc[:, 0]
 
-                # Capital Expenditure (usually negative in statements)
-                capex = None
-                for label in [
-                    "Capital Expenditure",
-                    "Capital Expenditures",
-                ]:
-                    if label in latest.index:
-                        capex = latest[label]
-                        break
+            # Operating Cash Flow — try several label variants
+            ocf = None
+            for label in [
+                "Total Cash From Operating Activities",
+                "Operating Cash Flow",
+                "Cash Flow From Continuing Operating Activities",
+            ]:
+                if label in latest.index:
+                    ocf = latest[label]
+                    break
 
-                if ocf is not None and not np.isnan(ocf):
-                    result["ocf"] = float(ocf)
-                if capex is not None and not np.isnan(capex):
-                    result["capex"] = float(capex)
-        except Exception:
-            pass  # fall through to info-based approach
+            # Capital Expenditure (usually negative in statements)
+            capex = None
+            for label in [
+                "Capital Expenditure",
+                "Capital Expenditures",
+            ]:
+                if label in latest.index:
+                    capex = latest[label]
+                    break
+
+            if ocf is not None and not np.isnan(ocf):
+                result["ocf"] = float(ocf)
+            if capex is not None and not np.isnan(capex):
+                result["capex"] = float(capex)
 
         # Fallback: use info dict if cash flow statement was empty
         if np.isnan(result["ocf"]):
@@ -496,6 +516,9 @@ def run_tier15(
     print(f"  Scanning {total} tickers  (batch_size={batch_size})")
     t0 = time.time()
 
+    # Use disk cache to avoid redundant yfinance calls
+    _cache = DataCache()
+
     gg_records: List[Dict[str, Any]] = []
     errors = 0
 
@@ -510,7 +533,7 @@ def run_tier15(
             end="",
         )
 
-        rec = _fetch_gg_for_ticker(ticker)
+        rec = _fetch_gg_for_ticker(ticker, cache=_cache)
         gg_records.append(rec)
 
         if rec["error"]:
@@ -529,8 +552,9 @@ def run_tier15(
                 time.sleep(inter_ticker_pause)
 
     elapsed_total = time.time() - t0
+    stats = _cache.stats()
     print(f"\n  GG scan complete: {total} tickers in {elapsed_total:.1f}s  "
-          f"({errors} errors)")
+          f"({errors} errors, cache: {stats['hits']} hits / {stats['misses']} misses)")
 
     # Merge GG data into tier1 dataframe
     df_gg = pd.DataFrame(gg_records)
@@ -674,7 +698,7 @@ def save_tier2_shortlist(df: pd.DataFrame, top_n: int = 10) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="US Equity Turtle Strategy — Finviz Screener + Quick GG Scanner",
+        description="US Equity Quality Yield Strategy — Finviz Screener + Quick GG Scanner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
@@ -737,7 +761,7 @@ def main() -> None:
     args = parse_args()
 
     print("=" * 80)
-    print("US EQUITY TURTLE STRATEGY — Screening Pipeline")
+    print("US EQUITY QUALITY YIELD STRATEGY — Screening Pipeline")
     print(f"Started: {_now_stamp()}")
     print("=" * 80)
     t_start = time.time()

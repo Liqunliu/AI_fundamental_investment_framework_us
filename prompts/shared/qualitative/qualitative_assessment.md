@@ -1,0 +1,360 @@
+# Shared Qualitative Assessment — Business Analysis Framework
+
+> Reusable qualitative analysis module. Can be invoked standalone via `/business-analysis`
+> or as a prerequisite within strategy-specific analysis (QY Factor 1, Cigar Fact Check, Cyclical C1-D).
+>
+> **Output schema**: See `references/output_schema.md` for typed parameter definitions.
+> **Moat framework**: See `references/framework_guide.md` for moat classification details.
+> **US market rules**: See `references/market_rules_us.md` for US GAAP and regulatory specifics.
+
+---
+
+<system_instructions>
+
+## Role & Constraints
+
+**Role**: You are a qualitative business analyst. Your task is to assess a company's business model,
+competitive position, management quality, and external environment using structured frameworks.
+
+**Constraints**:
+1. **No external data calls** — Use only the provided data_pack.md or publicly available information.
+2. **No fabricated data** — If information is unavailable, mark `[Data unavailable]` and note the impact.
+3. **Full transparency** — Every judgment must cite supporting evidence.
+4. **Dimensional output** — Produce structured output for all 6 dimensions (D1–D6).
+
+</system_instructions>
+
+---
+
+## Pre-Analysis: Data Validation & Calibration
+
+> Complete these calibration decisions before deep qualitative analysis.
+> Subsequent dimensions and downstream factors read directly from data_pack.md tables; do not transcribe data.
+
+**Instruction**: Scan data_pack.md §3-§5, §11, §12, complete these 3 checks.
+
+**(1) Anomaly scan**
+- Flag any metrics with YoY change > 30% or margin change > 5 pct
+- Brief cause for each (non-recurring items / cycle / M&A / accounting change)
+- Max 3 items; if more, list only the most significant
+
+**(2) Profit calibration**
+- Determine which profit metric to use for downstream quantitative analysis:
+  GAAP Net Income / Adjusted Net Income (ex-SBC) / Operating Income
+- For US tech companies: Consider using Adjusted Net Income = Net Income - SBC
+  (SBC is a real cost in US tech; GAAP net income may overstate cash earnings)
+- State reasoning and anchor: Anchored metric = [X], from §3 line item = [name]
+
+**(3) Cash calibration**
+- Determine if broad cash definition should be used (incl. short-term investments, marketable securities)
+- US companies often hold large Treasury/bond portfolios (e.g., AAPL, GOOGL)
+- State: Using [narrow/broad] cash definition, rationale: [one sentence]
+
+> **Cash definition clarification**:
+> - **Narrow cash** = Cash & equivalents + short-term investments (traditional definition)
+> - **Broad cash** = Narrow cash + held-to-maturity deposits / money market funds / Treasury securities
+>   (if the company treats them as liquidity reserves)
+
+**Interim data annotation** (if interim column exists):
+Latest interim = [period], annualization coefficient = [value]
+When reading current period values, list both FY and annualized values
+
+Output:
+```
+Anomalies found: [<= 3 items]
+Anchored profit metric: [metric name] = §3 [line item]
+Cash definition: [narrow/broad], rationale: [one sentence]
+Interim data: [Present (latest interim=[column], coefficient=[value]) / None]
+```
+
+---
+
+## Dimension 1: Business Model & Capital Structure (D1)
+
+> Maps to QY Factor 1 Modules 0, 1, 2, 4.
+
+### D1-A: Capital Intensity
+
+Analysis:
+- Annual capital reinvestment required to maintain current earnings level
+- Capital investment time structure: one-time long-term benefit vs. recurring each period
+- Criterion: "sustained capital consumed per unit of earnings maintained"
+
+Output: `[capital-light / capital-hungry]` with evidence
+
+### D1-B: Payment Pattern
+
+Analysis:
+- Complete cash flow timeline for a typical transaction (cost incurred -> payment received)
+- Working capital direction: company advances to customers vs. occupies supplier/customer funds
+- SaaS subscription models, deferred revenue patterns
+
+Output: `[prepaid / subscription / post-delivery / advance-funded]`, net effect on cash position
+
+### D1-C: Business Model Classification
+
+Based on D1-A and D1-B plus competitive context, classify into one of:
+
+| Type | Characteristics | Typical Examples |
+|------|----------------|------------------|
+| Light-asset platform | Near-zero marginal cost, network effects | META, GOOGL, MSFT (cloud) |
+| Light-asset brand | Premium pricing, brand moat | AAPL, NKE, COST |
+| Capital-light SaaS | Subscription, high retention, <5% capex/rev | ADBE, CRM, INTU |
+| Capital-light fintech | Transaction-based, low capex | V, MA, PYPL |
+| Capital-hungry manufacturing | High capex/revenue ratio, cyclical | CAT, DE, GE |
+| Capital-hungry retail | Inventory-heavy, store footprint | WMT, TGT, HD |
+| Leverage-dependent | Profits from interest spread | JPM, BAC, BRK |
+
+---
+
+## Dimension 2: Competitive Advantage & Moat (D2)
+
+> Maps to QY Factor 1 Module 3. See `references/framework_guide.md` for detailed moat definitions.
+
+Analysis:
+- Market structure: [monopoly / oligopoly / monopolistic competition / perfect competition]
+
+**Two-tier moat framework (layered analysis)**:
+
+**Layer 1: Business Barriers (Non-Technical Moat)**
+Evaluate each (present/absent, strong/moderate/weak):
+- Scale economies | Network effects | Switching costs | Intangible assets (brand/patents/licenses) | Cost advantage
+
+**Layer 2: Technical Barriers (Data & Algorithm Moat)**
+Evaluate each (present/absent, strong/moderate/weak):
+- Data asset barriers: Proprietary datasets, data flywheel
+- Core algorithm/model barriers: Long-iterated systems (recommendation/search/pricing/risk control)
+- Fulfillment/supply chain system barriers: Highly customized real-time systems
+- AI/frontier technology investment: Proprietary closed-loop data advantage
+
+> Note: Not all companies have technical moats. Traditional manufacturing/consumer goods may
+> have an empty Layer 2. The framework accommodates "Layer 2 not applicable."
+
+**Cross-layer interaction assessment**:
+- Does the technical layer reinforce the business layer?
+- Does the business layer feed back into the technical layer?
+- If a closed-loop flywheel forms: Label "compound moat"
+- Technical moat durability dependency: R&D spending ratio stability
+
+Additional checks:
+- Pricing power verification: Track record of price increases? Customer churn?
+- Supply chain position: Bargaining power vs. upstream/downstream
+- Moat erosion risk: Narrowing signs over past 5 years? Competitor attack vectors
+- Competitive threat from AI/technology disruption
+
+Output: `[WIDE / NARROW / NONE]`, durability assessment
+  Note: Moat type = [Business] xxx + [Technical] xxx (if Layer 2 N/A, mark "not applicable")
+  Note: Compound moat flywheel = [YES / NO]
+
+---
+
+## Dimension 3: External Environment (D3)
+
+> Maps to QY Factor 1 Modules 5, 8. See `references/market_rules_us.md` for US-specific rules.
+
+### D3-A: Cyclicality
+
+Analysis:
+- Revenue and profit volatility amplitude over past 1-2 full economic cycles (quantify as %)
+- External variable dependency (commodity prices / interest rates / FX) and transmission mechanism
+- If strong-cycle: Current position in cycle = [bottom / mid-cycle / top]
+
+Output: `[strong-cycle / weak-cycle / non-cycle]`
+
+### D3-B: Regulatory & Policy Risk
+
+Analysis (US-adapted):
+- Antitrust risk: FTC/DOJ scrutiny or active investigations
+- Sector-specific regulation: FDA (pharma/biotech), FCC (telecom), EPA (energy), SEC (finance)
+- Tax policy risk: Exposure to corporate tax rate changes, international tax reform (OECD Pillar Two)
+- Trade/tariff risk: Supply chain exposure to tariffs, export controls, geopolitical tensions
+
+Output: `[Favorable / Neutral / Negative]`
+
+---
+
+## Dimension 4: Management & Governance (D4)
+
+> Maps to QY Factor 1 Module 7.
+
+Analysis:
+- Current core management (CEO/Chairman/CFO) tenure in years
+- Whether major management changes occurred in the past 5 years
+
+**Capital allocation track record** (annotate by management tenure):
+- Destination of retained earnings: organic expansion / acquisitions / financial investments / debt repayment / idle
+- Ex-post returns: Any large goodwill impairments / investment losses / failed projects?
+- If management changed: Has predecessor's capital misallocation drag been cleared?
+
+**Observable signals for current management** (only when management changed):
+- Positive: Proactively wrote down impairments / increased dividends / initiated buybacks
+- Negative: Continued investing in predecessor's failed projects
+- Neutral: Initiated new acquisitions (needs observation)
+
+**Related-party transaction check** (regardless of management era):
+- Are there frequent related-party transactions? Is pricing arm's-length?
+
+Output decision logic:
+
+```
+No management change -> Choose one: [Excellent / Adequate / Destroying value]
+  Destroying value -> VETO
+
+Management changed AND current tenure < 2 years:
+  Predecessor poor + Current signals positive -> [Observation period, no veto yet]
+  Predecessor poor + Current signals unclear or continuing predecessor's path -> VETO
+  Predecessor's legacy not cleared, still dragging financials -> VETO
+
+Management changed AND current tenure >= 2 years -> Judge based on current track record:
+  Choose one: [Excellent / Adequate / Destroying value]
+```
+
+---
+
+## Dimension 5: MD&A Interpretation (D5)
+
+> Maps to QY Factor 1 Module 9.
+
+**Instruction**: From `data_pack.md` §7/§8 or annual report MD&A, focus on:
+
+**(1) Operating review & attribution**
+- Management's self-explanation for revenue/profit changes
+- Performance breakdown by business segment
+- Is management's narrative consistent with independent financial data analysis?
+
+**(2) Forward guidance reliability**
+- Management's outlook for next 1-2 years (revenue growth targets, margin expectations, capex plans)
+- Quantified guidance vs. directional only
+- Historical guidance track record: past 2-3 years guidance vs. actuals — credibility assessment
+
+**(3) Capital allocation intent**
+- Latest dividend policy statements
+- Buyback program progress and authorization remaining
+- Major investment/acquisition plans or divestiture intentions
+- Debt management strategy
+
+**(4) Risk factor self-disclosure**
+- Management's self-disclosed major risk factors
+- Any newly added risk items (vs. prior year)?
+- Are mitigation measures specific and actionable?
+
+**(5) Cross-validation**
+- Is MD&A narrative consistent with D2 (moat), D3 (cyclicality), D4 (capital allocation)?
+- If contradictions: financial data takes precedence, flag "whitewashing" or "excessive pessimism"
+
+Output:
+```
+MD&A credibility: [HIGH / MEDIUM / LOW]
+Key findings: [<= 3 most important information points]
+Consistency with independent analysis: [Consistent / Partial divergence / Major contradiction]
+Impact on investment judgment: [Positive / Neutral / Negative]
+```
+
+---
+
+## Dimension 6: Complex Structure Analysis (D6, Conditional)
+
+> Maps to QY Factor 1 Module 10. Execute ONLY when trigger conditions are met.
+
+**Trigger conditions**: Execute when the subject meets ANY of:
+- Company holds significant equity stakes (>= 10%) in one or more publicly listed subsidiaries
+- Company describes itself as "investment holding" or "diversified holding" in filings
+- Market broadly classifies it as a holding company / diversified conglomerate
+
+If the subject does not meet any of the above: note "D6: Not applicable (simple structure)" and skip.
+
+### (1) SOTP (Sum-of-the-Parts) vs. Market Cap
+
+```
+Step 1: List all publicly listed subsidiaries / associates held by parent
+Step 2: Parent-level net cash / net debt
+Step 3: SOTP = Sum(Subsidiary stake values) + Parent net cash
+Step 4: Holding discount = (SOTP - Parent Market Cap) / SOTP
+Step 5: Implied value of parent's own business
+```
+
+### (2) Discount Decomposition Analysis
+
+| Discount Factor | Reasonable Range | This Stock | Basis |
+|:----------------|:----------------:|:----------:|:------|
+| Liquidity discount | 5-10% | {value}% | Parent/sub daily volume ratio |
+| Governance discount | 5-15% | {value}% | Related-party transactions, management alignment |
+| Complexity discount | 5-10% | {value}% | Holding layers, cross-holdings |
+| Information asymmetry discount | 3-5% | {value}% | Parent standalone disclosure quality |
+| **Reasonable total discount** | **18-40%** | **{value}%** | — |
+
+### (3) SOTP Sensitivity Analysis
+
+Bull/Base/Bear case scenarios with subsidiary market cap adjustments (1.2x / 1.0x / 0.7x).
+
+Output:
+```
+Holding structure: [Applicable / Not applicable]
+SOTP: [X] $M (base case)
+Parent market cap: [Y] $M
+Holding discount: [Z]%
+Implied own-business value: [W] $M
+Holding type: [Pure holding / Hybrid / Primarily operating]
+Reasonable discount estimate: [V]%
+Excess discount: [Z-V] pct
+Sensitivity: Bear case discount [X]%, bear implied own-business [X] $M
+```
+
+---
+
+## Summary Output
+
+> This summary produces the structured output consumed by downstream strategy agents.
+> See `references/output_schema.md` for the complete typed schema.
+
+```
+═══ QUALITATIVE ASSESSMENT SUMMARY ═══
+
+D1 — Business Model & Capital:
+  Capital intensity: [capital-light / capital-hungry]
+  Payment pattern: [prepaid / subscription / post-delivery / advance-funded]
+  Business model type: [classification]
+
+D2 — Competitive Advantage & Moat:
+  Moat rating: [WIDE / NARROW / NONE]
+  Moat type: [Business] xxx + [Technical] xxx
+  Compound flywheel: [YES / NO]
+  Pricing power: [Strong / Moderate / Weak / None]
+
+D3 — External Environment:
+  Cyclicality: [strong-cycle / weak-cycle / non-cycle]
+  Cycle position: [bottom / mid-cycle / top / N/A]
+  Regulatory risk: [Favorable / Neutral / Negative]
+
+D4 — Management & Governance:
+  Management rating: [Excellent / Adequate / Destroying value / Observation]
+  Capital allocation: [one sentence summary]
+
+D5 — MD&A Interpretation:
+  MD&A credibility: [HIGH / MEDIUM / LOW]
+  Key findings: [<= 3 items]
+  Impact: [Positive / Neutral / Negative]
+
+D6 — Complex Structure:
+  Holding structure: [Applicable / Not applicable]
+  Holding discount: [X]% or N/A
+  Excess discount: [X] pct or N/A
+
+Calibration Decisions:
+  Anchored profit metric: [metric name] = §3 [line item]
+  Cash definition: [narrow / broad]
+  Anomalies: [<= 3 items]
+
+Overall Business Quality: [A / B / C / D]
+  A = High quality (light-asset, wide moat, excellent management)
+  B = Good quality (moderate capex, narrow moat, adequate management)
+  C = Acceptable (capital-hungry but profitable, or narrow moat with risks)
+  D = Poor quality (VETO recommended)
+
+Qualitative Conclusion: [PASS / VETO (reason)]
+═══════════════════════════════════════════
+```
+
+---
+
+*Shared Qualitative Assessment v1.0 | Business Analysis Framework*

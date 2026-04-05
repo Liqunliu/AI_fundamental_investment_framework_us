@@ -1,4 +1,4 @@
-"""Configuration and utility functions for US Equity Turtle Strategy."""
+"""Configuration and utility functions for US Equity Quality Yield Strategy."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from typing import Optional
 
 @dataclass
 class USMarketConfig:
-    """US equity market configuration for Turtle Strategy."""
+    """US equity market configuration for Quality Yield Strategy."""
 
     # Risk-free rate (US 10-Year Treasury)
     risk_free_rate: float = 0.043  # 4.3%
@@ -68,6 +68,17 @@ class USMarketConfig:
     # Alert thresholds
     alert_price_change_pct: float = 5.0  # Alert if price moves > 5%
     alert_gg_proximity_pct: float = 1.0  # Warn if GG within 1 pct of threshold
+
+    # Cache TTLs (seconds)
+    cache_ttl_financials: int = 7 * 86400   # 7 days
+    cache_ttl_info: int = 7 * 86400         # 7 days
+    cache_ttl_prices: int = 86400           # 1 day
+    cache_ttl_history: int = 86400          # 1 day
+
+    # Pipeline settings
+    pipeline_top_n: int = 10
+    pipeline_with_edgar: bool = True
+    pipeline_parallel_tickers: int = 1  # Sequential for rate limiting
 
 
 # Singleton config

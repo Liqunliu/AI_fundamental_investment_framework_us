@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Portfolio Manager for US Equity Turtle Strategy.
+"""Portfolio Manager for US Equity Quality Yield Strategy.
 
 Reads, writes, and updates the US_PORTFOLIO.md file.
 Supports:
@@ -150,7 +150,7 @@ def generate_portfolio_md(
     threshold = DEFAULT_CONFIG.threshold_ii * 100
 
     lines = []
-    lines.append("# US Equity Portfolio — Turtle Strategy")
+    lines.append("# US Equity Portfolio — Quality Yield Strategy")
     lines.append("")
     lines.append(f"**Last Updated**: {today}")
     lines.append(f"**Threshold II**: {threshold:.2f}% (Rf {rf:.2f}% + 3%)")
@@ -282,7 +282,7 @@ def init_portfolio(tickers: Optional[List[str]] = None) -> str:
             changes=["Created new US equity portfolio"] + (
                 [f"Added tickers: {', '.join(tickers)}"] if tickers else []
             ),
-            rationale="Initial setup of US Equity Turtle Strategy portfolio.",
+            rationale="Initial setup of US Equity Quality Yield Strategy portfolio.",
             source="Manual",
         ),
     )
@@ -407,7 +407,7 @@ def update_from_gg_results(gg_dir: str, source: str = "yfinance") -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Portfolio Manager for US Equity Turtle Strategy",
+        description="Portfolio Manager for US Equity Quality Yield Strategy",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

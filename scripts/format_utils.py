@@ -1,4 +1,4 @@
-"""Markdown output formatting utilities for US Equity Turtle Strategy.
+"""Markdown output formatting utilities for US Equity Quality Yield Strategy.
 
 All financial amounts are in millions USD.
 """
