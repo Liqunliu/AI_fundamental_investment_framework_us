@@ -152,7 +152,7 @@ def parse_report(md_text: str) -> dict:
     # --- Extract title metadata ---
     # Pattern: # PYPL -- Quality Yield Strategy Analysis Report
     title_match = re.search(
-        r"^#\s+(\S+)\s+--\s+Quality Yield Strategy Analysis Report",
+        r"^#\s+(\S+)\s+(?:--|—|–)\s+Quality Yield Strategy Analysis Report",
         md_text, re.MULTILINE,
     )
     if title_match:
