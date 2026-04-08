@@ -51,6 +51,7 @@ within the last 7 days. Inform the user that existing data is being reused.
 2. **Load reference files as needed**:
    ```
    Read("prompts/shared/qualitative/references/framework_guide.md")     — for D2 moat analysis
+   Read("prompts/shared/qualitative/references/framework_scope.md")    — for applicability & limitations
    Read("prompts/shared/qualitative/references/market_rules_us.md")     — for US-specific rules
    Read("prompts/shared/qualitative/references/judgment_examples.md")   — for calibration
    Read("prompts/shared/qualitative/references/output_schema.md")       — for output format

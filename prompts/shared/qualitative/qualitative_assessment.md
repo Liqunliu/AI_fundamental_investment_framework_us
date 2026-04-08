@@ -6,6 +6,7 @@
 > **Output schema**: See `references/output_schema.md` for typed parameter definitions.
 > **Moat framework**: See `references/framework_guide.md` for moat classification details.
 > **US market rules**: See `references/market_rules_us.md` for US GAAP and regulatory specifics.
+> **Scope & limitations**: See `references/framework_scope.md` for applicability boundaries.
 
 ---
 
@@ -140,7 +141,30 @@ Expense manipulation signals: [None / list of concerns]
 Profit quality: [HIGH / MODERATE / LOW]
 ```
 
-### D1-E: Business Model Classification
+### D1-E: Supplementary Checks (conditional — expand when data signals warrant)
+
+> These are not independent sub-dimensions. Expand only when the financial data flags
+> a potential concern; if no red flags are present, a one-line "no concerns" suffices.
+
+**Interest-bearing debt structure** — Trigger: if (short-term borrowings + long-term debt + bonds payable) / total assets > 20%:
+- Interest coverage: EBITDA / interest expense — is it > 3x?
+- Cash coverage: (cash + short-term investments) / total interest-bearing debt — is it > 1.0?
+- Cost of debt: interest expense / total interest-bearing debt vs. risk-free rate spread
+- **Distinguish operating leverage from financial leverage**: High fixed assets + low debt (e.g., utilities, toll roads) = operating leverage (acceptable). High debt + weak cash flow = financial risk (flag).
+
+**Profit source decomposition** — Trigger: if investment income / pre-tax profit > 20%:
+- Flag as "investment-income-dependent" and assess sustainability (stable JV/associate dividends vs. one-time disposal gains)
+- Check cash backing: does investment income have corresponding operating cash inflow?
+- **P/B reliability check**: if long-term equity investments are carried at fair value and are large relative to book equity, P/B may be distorted by fair-value swings — flag for downstream valuation
+- Compare core operating profit growth vs. reported profit growth to judge earnings quality
+
+Output:
+```
+Debt concern: [None / Flag — coverage ratio X, cash coverage Y]
+Profit source concern: [None / Flag — investment income Z% of pre-tax profit]
+```
+
+### D1-F: Business Model Classification
 
 Based on D1-A through D1-D plus competitive context, classify into one of:
 
@@ -407,6 +431,8 @@ D1 — Business Model & Capital:
   Business model type: [classification]
   Revenue quality: Core revenue share [X]%, core growth [X]% vs headline [Y]%
   Profit quality: [HIGH / MODERATE / LOW], non-operational contribution [X]%
+  Debt concern: [None / Flag with details]
+  Profit source concern: [None / Flag with details]
 
 D2 — Competitive Advantage & Moat:
   Moat rating: [WIDE / NARROW / NONE]

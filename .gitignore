@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 output/*
+docs/specs/
 !output/.gitkeep
 *.parquet
 bloomberg_credentials.json
