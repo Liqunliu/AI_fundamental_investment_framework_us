@@ -182,12 +182,69 @@ Based on D1-A through D1-D plus competitive context, classify into one of:
 
 ## Dimension 2: Competitive Advantage & Moat (D2)
 
-> Maps to QY Factor 1 Module 3. See `references/framework_guide.md` for detailed moat definitions.
+> Maps to QY Factor 1 Module 3. See `references/framework_guide.md` for detailed moat definitions
+> and Greenwald three-dimensional framework.
+>
+> Execute all 6 steps sequentially. Each step builds on the prior.
+
+### D2-1: Industry Map
 
 Analysis:
 - Market structure: [monopoly / oligopoly / monopolistic competition / perfect competition]
+- CR4 estimate: Top 4 firms' combined market share [X]% (source: §8 or web search)
 
-**Two-tier moat framework (layered analysis)**:
+**Entry Barrier Assessment**:
+
+| Barrier Type | Strength | Evidence |
+|-------------|----------|----------|
+| Capital requirements | [High/Medium/Low] | [one-line evidence] |
+| Regulatory/licensing | [High/Medium/Low] | [one-line evidence] |
+| Technology/IP | [High/Medium/Low] | [one-line evidence] |
+| Distribution/network | [High/Medium/Low] | [one-line evidence] |
+| Brand/reputation | [High/Medium/Low] | [one-line evidence] |
+
+**Core segments** (from §9 or available data):
+- List top 2-4 segments with revenue share and margin profile
+
+Output:
+```
+Market structure: [type]
+CR4: [X]%
+Entry barrier (overall): [High / Medium / Low]
+```
+
+### D2-2: Quantitative Verification
+
+> Verify moat existence with financial data before qualitative assessment.
+> A true moat should produce above-average, sustainable returns.
+
+Analysis (from data_pack §15 Return Trends or §11):
+- 5-year average ROE: [X]% (calculate from available years)
+- ROE volatility: standard deviation across available years
+- Trough-year net margin: lowest net margin in available data
+
+**Moat existence gate**:
+
+| Condition | Assessment |
+|-----------|-----------|
+| 5yr avg ROE > 15% AND low volatility (SD < 5 pct) | Strong evidence of moat |
+| 5yr avg ROE 12-15% OR moderate volatility | Moderate evidence — moat possible |
+| 5yr avg ROE < 12% AND no visible structural barrier | Questionable — moat claim needs strong qualitative support |
+
+> Note: Negative equity (e.g., buyback-driven) makes ROE meaningless.
+> In that case, use ROA or ROIC as substitute and note the limitation.
+
+Output:
+```
+roe_5y_avg: [X]%
+ROE volatility: [X] pct (SD)
+Trough net margin: [X]%
+Moat existence: [Strong evidence / Moderate evidence / Questionable]
+```
+
+### D2-3: Moat Source Analysis (Dual Framework)
+
+**Framework A: Two-Tier Layered Analysis** (primary)
 
 **Layer 1: Business Barriers (Non-Technical Moat)**
 Evaluate each (present/absent, strong/moderate/weak):
@@ -209,15 +266,121 @@ Evaluate each (present/absent, strong/moderate/weak):
 - If a closed-loop flywheel forms: Label "compound moat"
 - Technical moat durability dependency: R&D spending ratio stability
 
-Additional checks:
-- Pricing power verification: Track record of price increases? Customer churn?
-- Supply chain position: Bargaining power vs. upstream/downstream
-- Moat erosion risk: Narrowing signs over past 5 years? Competitor attack vectors
-- Competitive threat from AI/technology disruption
+**Framework B: Greenwald Three-Dimensional Analysis** (complementary cross-check)
 
-Output: `[WIDE / NARROW / NONE]`, durability assessment
-  Note: Moat type = [Business] xxx + [Technical] xxx (if Layer 2 N/A, mark "not applicable")
-  Note: Compound moat flywheel = [YES / NO]
+> See `references/framework_guide.md` § Greenwald for detailed definitions.
+> Rate each dimension independently. Greenwald often surfaces moats that
+> the Layer framework underweights (especially local scale economies and demand-side habits).
+
+| Dimension | Rating | Key Evidence |
+|-----------|--------|-------------|
+| Supply-side advantages | [Strong/Moderate/Weak/N/A] | [cost structure, process, resource access] |
+| Demand-side advantages | [Strong/Moderate/Weak/N/A] | [habits, switching costs, search costs] |
+| Scale economy advantages | [Strong/Moderate/Weak/N/A] | [fixed cost spreading, local vs global scale] |
+
+**Framework reconciliation**:
+- If Framework A and B agree → high confidence in moat rating
+- If they diverge → investigate the source of disagreement; state which framework
+  better captures this company's competitive dynamics and why
+- Primary framework: Layer (Framework A). Greenwald (Framework B) is used to
+  cross-check and surface advantages the Layer framework may underweight.
+
+### D2-4: False Advantage Identification
+
+> Check each item. A "Yes" means the perceived advantage is not a true moat.
+> This step prevents overrating cyclical peaks or government-dependent advantages.
+
+| # | False Advantage | Check | Result |
+|---|----------------|-------|--------|
+| 1 | Cyclical peak masquerading as moat | Is high ROE driven by cycle top rather than structural advantage? | [Yes/No] |
+| 2 | Government protection without organic advantage | Do subsidies, tariffs, or exclusive licenses create the advantage rather than the business itself? | [Yes/No] |
+| 3 | First-mover without switching costs | Is the company early to market but customers face no cost to switch? | [Yes/No] |
+| 4 | Technology lead without data flywheel | Could competitors replicate the technology within 2 years? | [Yes/No] |
+| 5 | Brand awareness without pricing power | Is the brand well-known but unable to command price premiums over competitors? | [Yes/No] |
+| 6 | Scale without cost advantage | Is the company large but unit costs similar to smaller competitors? | [Yes/No] |
+
+Output: `false_advantages = [list of confirmed items, or "None identified"]`
+
+> If any false advantage is confirmed, consider whether the moat rating from D2-3 should
+> be downgraded. Note the impact in the D2 output.
+
+### D2-5: Competitor Comparison
+
+Select top 2-3 competitors (from data_pack §8 or web search).
+
+**Competitive Comparison Table**:
+
+| Metric | This Company | Competitor 1 | Competitor 2 | Competitor 3 |
+|--------|-------------|-------------|-------------|-------------|
+| Revenue ($M) | | | | |
+| Operating Margin (%) | | | | |
+| ROE (%) | | | | |
+| Market Share (%) | | | | |
+| Moat Type | | | | |
+| Key Advantage | | | | |
+
+**Relative Ranking** (on the most competitively relevant dimension):
+1. [Company] — [reason]
+2. [Company] — [reason]
+3. [Company] — [reason]
+
+**Competitive gap sustainability**: [Widening / Stable / Narrowing]
+- Evidence: [one sentence citing trend data]
+
+### D2-6: Sustainability & Monitoring
+
+**Pricing power evidence**:
+- Track record of price increases in past 3-5 years? [Yes/No, with examples]
+- Customer churn or retention data (if available)
+
+**Supply chain position**:
+- Bargaining power vs. upstream suppliers: [Strong / Balanced / Weak]
+- Bargaining power vs. downstream customers: [Strong / Balanced / Weak]
+
+**Moat erosion vectors** (top 2-3 specific threats):
+1. [Threat] — estimated timeline: [X years]
+2. [Threat] — estimated timeline: [X years]
+3. [Threat] — estimated timeline: [X years]
+
+**Human capital dependency**: [System-type / Talent-type]
+- System-type: Competitive advantage codified into processes, IP, platforms (favorable)
+- Talent-type: Advantage depends on key individuals (unfavorable)
+
+**Moat Monitoring KPIs** (3 concrete, measurable indicators):
+
+| KPI | Current Value | Warning Threshold | Rationale |
+|-----|--------------|-------------------|-----------|
+| [KPI 1] | [value] | [warn if crosses X] | [why this matters] |
+| [KPI 2] | [value] | [warn if crosses X] | [why this matters] |
+| [KPI 3] | [value] | [warn if crosses X] | [why this matters] |
+
+**Moat sustainability assessment**: [Durable / At risk / Eroding]
+
+### D2 Output
+
+```
+Market structure: [type], CR4: [X]%
+Entry barrier: [High / Medium / Low]
+ROE 5yr avg: [X]%, Moat existence: [Strong evidence / Moderate / Questionable]
+
+Moat rating: [WIDE / NARROW / NONE]
+Moat type: [Business] xxx + [Technical] xxx (if Layer 2 N/A, mark "not applicable")
+Compound flywheel: [YES / NO]
+Moat evidence strength: [Strong / Moderate / Weak]
+
+Greenwald cross-check: Supply=[rating], Demand=[rating], Scale=[rating]
+Framework agreement: [Agree / Diverge — explain]
+
+False advantages: [list or "None identified"]
+Pricing power: [Strong / Moderate / Weak / None]
+
+Competitor ranking: [1st: X, 2nd: Y, 3rd: Z]
+Competitive gap: [Widening / Stable / Narrowing]
+
+Human capital: [System-type / Talent-type]
+Moat sustainability: [Durable / At risk / Eroding]
+Moat monitor KPIs: [3 items with current value + threshold]
+```
 
 ---
 
@@ -435,10 +598,18 @@ D1 — Business Model & Capital:
   Profit source concern: [None / Flag with details]
 
 D2 — Competitive Advantage & Moat:
+  Market structure: [type], CR4: [X]%
+  ROE 5yr avg: [X]%, Moat existence: [Strong evidence / Moderate / Questionable]
   Moat rating: [WIDE / NARROW / NONE]
   Moat type: [Business] xxx + [Technical] xxx
   Compound flywheel: [YES / NO]
+  Moat evidence strength: [Strong / Moderate / Weak]
+  Greenwald: Supply=[rating], Demand=[rating], Scale=[rating]
+  False advantages: [list or "None identified"]
   Pricing power: [Strong / Moderate / Weak / None]
+  Competitor ranking: [1st: X, 2nd: Y, 3rd: Z] — gap: [Widening/Stable/Narrowing]
+  Moat sustainability: [Durable / At risk / Eroding]
+  Moat monitor KPIs: [3 items with current value + threshold]
 
 D3 — External Environment:
   Cyclicality: [strong-cycle / weak-cycle / non-cycle]

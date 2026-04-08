@@ -40,6 +40,14 @@ position sizing, value trap screening, and cross-validation.
 | `moat_type_business` | string | Free text (e.g., `"Scale economies + Brand"`) | F1 Module 3 | Business barrier layer description |
 | `moat_type_technical` | string | Free text or `"not applicable"` | F1 Module 3 | Technical barrier layer description |
 | `compound_flywheel` | bool | `YES` \| `NO` | F1 Module 3 | Whether cross-layer flywheel exists |
+| `roe_5y_avg` | float (%) | 0–100 | D2-2 | 5-year average ROE for moat verification |
+| `moat_evidence_strength` | enum | `"Strong"` \| `"Moderate"` \| `"Weak"` | D2-2 | Quantitative evidence strength for moat existence |
+| `supply_side_rating` | enum | `"Strong"` \| `"Moderate"` \| `"Weak"` \| `"N/A"` | D2-3 | Greenwald supply-side advantage rating |
+| `demand_side_rating` | enum | `"Strong"` \| `"Moderate"` \| `"Weak"` \| `"N/A"` | D2-3 | Greenwald demand-side advantage rating |
+| `scale_economy_rating` | enum | `"Strong"` \| `"Moderate"` \| `"Weak"` \| `"N/A"` | D2-3 | Greenwald scale economy advantage rating |
+| `false_advantages` | list[string] \| `"None"` | free text | D2-4 | Confirmed false advantages from checklist |
+| `moat_sustainability` | enum | `"Durable"` \| `"At risk"` \| `"Eroding"` | D2-6 | Moat sustainability assessment |
+| `moat_monitor_kpis` | list[string] | 3 items, `"KPI: value (warn at X)"` | D2-6 | Monitoring KPIs with warning thresholds |
 | `management_rating` | enum | `"Excellent"` \| `"Adequate"` \| `"Destroying value"` \| `"Observation"` | F1 Module 7 | Management & governance assessment |
 | `business_model_type` | string | One of Module 4 classifications | F1 Module 4 | Business model classification |
 | `asset_quality_score` | enum | `"A"` \| `"B"` \| `"C"` \| `"D"` | F1 Summary | Overall asset quality grade |
@@ -121,6 +129,14 @@ Qualitative Parameters:
   moat_type_business       = [description]
   moat_type_technical      = [description or "not applicable"]
   compound_flywheel        = [YES/NO]
+  roe_5y_avg               = [value]%
+  moat_evidence_strength   = [Strong/Moderate/Weak]
+  supply_side_rating       = [Strong/Moderate/Weak/N/A]
+  demand_side_rating       = [Strong/Moderate/Weak/N/A]
+  scale_economy_rating     = [Strong/Moderate/Weak/N/A]
+  false_advantages         = [list or "None"]
+  moat_sustainability      = [Durable/At risk/Eroding]
+  moat_monitor_kpis        = [3 items: "KPI: value (warn at X)"]
   management_rating        = [Excellent/Adequate/Destroying value/Observation]
   business_model_type      = [classification]
   asset_quality_score      = [A/B/C/D]

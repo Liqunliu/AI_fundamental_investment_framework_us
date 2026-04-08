@@ -110,6 +110,95 @@ Layer 2 → Layer 1 reinforcement:
 
 ---
 
+## Greenwald Three-Dimensional Framework (Complementary)
+
+> Based on Bruce Greenwald's *Competition Demystified*. This framework complements the
+> Layer analysis by examining competitive advantages through a different lens. It is
+> particularly useful for identifying local scale economies and demand-side habits that
+> the Layer framework may underweight.
+
+### Supply-Side Advantages
+
+**Definition**: Structural cost advantages arising from proprietary processes, exclusive
+resource access, or superior production technology — not from scale alone.
+
+- **Proprietary processes**: Manufacturing methods, logistics systems, or operational
+  workflows that competitors cannot easily replicate (e.g., TSMC's process node leadership)
+- **Resource access**: Exclusive or preferential access to raw materials, locations,
+  distribution channels, or talent pools (e.g., SHW store density, pipeline ROW)
+- **Technology/IP**: Patents, trade secrets, or accumulated know-how that lower costs
+  or enable unique products (e.g., ASML's EUV lithography monopoly)
+
+| Rating | Criteria |
+|--------|----------|
+| **Strong** | >15% structural cost advantage vs. median competitor; difficult to replicate within 5+ years |
+| **Moderate** | 5-15% cost advantage; replicable in 3-5 years with significant investment |
+| **Weak** | <5% cost advantage or easily matched |
+| **N/A** | Company competes on differentiation, not cost; supply-side not relevant |
+
+### Demand-Side Advantages
+
+**Definition**: Customer captivity arising from habits, switching costs, or search costs
+that make customers reluctant to change providers — even when alternatives exist.
+
+- **Habit/loyalty**: Deeply embedded consumer habits or brand loyalty that resist
+  rational switching (e.g., Coca-Cola consumption patterns, iPhone ecosystem)
+- **Switching costs**: Financial, time, data migration, or retraining costs to change
+  providers (overlaps with Layer 1 switching costs, but Greenwald emphasizes the
+  *customer psychology* dimension — not just contractual lock-in)
+- **Search costs**: Cost and effort for customers to evaluate alternatives (e.g.,
+  enterprise software where evaluating competitors requires months of POC work)
+
+| Rating | Criteria |
+|--------|----------|
+| **Strong** | Customer retention >90%, demonstrated ability to raise prices 3%+ annually, multi-year relationships |
+| **Moderate** | Customer retention 80-90%, some pricing power, moderate switching friction |
+| **Weak** | Customer retention <80%, price-sensitive customers, easy comparison shopping |
+| **N/A** | Commodity market where demand-side advantages cannot form |
+
+### Scale Economy Advantages (Greenwald-Specific)
+
+> Greenwald's key insight: scale economies only create moats when they operate in
+> **defined geographic or product markets** where the incumbent's share is large enough
+> to create a meaningful per-unit cost advantage. Global scale alone is rarely a moat
+> if competitors can match it in their own markets.
+
+**Types of scale advantage**:
+
+- **Local/regional scale**: Dominant share in a geographic market creates route density,
+  distribution efficiency, or brand awareness that regional competitors cannot match
+  (e.g., WM in waste collection, UPS in package delivery, HD in suburban home improvement)
+- **Global scale with high fixed costs**: Industries where fixed costs (R&D, regulatory
+  compliance, manufacturing) are so high that only a few firms can amortize them
+  (e.g., commercial aircraft: BA + EADSY duopoly; semiconductor equipment: ASML, LRCX, AMAT)
+- **Network-driven scale**: Scale reinforced by network effects where the largest player
+  has structurally lower per-unit costs (e.g., V/MA payment networks)
+
+**Greenwald's market share test**:
+- If the company's market share is >2x the next largest competitor in its *relevant market*
+  (geographic or product), scale economy advantages are likely strong
+- If market share is roughly equal to competitors, scale alone is not a moat
+
+| Rating | Criteria |
+|--------|----------|
+| **Strong** | Market share >2x nearest rival in relevant market; clear per-unit cost advantage from scale |
+| **Moderate** | Leading market share but <2x rival; scale benefits exist but competitors can partially match |
+| **Weak** | No meaningful per-unit cost advantage from scale; competitors operate at similar efficiency |
+| **N/A** | Industry where scale is not a relevant competitive factor |
+
+### Primary Framework Selection Rule
+
+- **Default**: Use the Layer framework (Framework A) as primary for the moat rating.
+  The Greenwald framework (Framework B) serves as a cross-check.
+- **Override**: If the Layer framework rates the moat as NONE but Greenwald identifies
+  a Strong demand-side or local scale advantage → upgrade to NARROW and note the override.
+- **Downgrade**: If the Layer framework rates WIDE but Greenwald shows Weak across all
+  three dimensions → flag inconsistency; investigate whether Layer barriers are real or nominal.
+- **Best fit for Greenwald**: Traditional industries (retail, industrials, utilities, consumer)
+  where technical moats (Layer 2) are absent. Greenwald adds the most value here.
+
+---
+
 ## Moat Rating Decision Rules
 
 | Condition | Rating |
